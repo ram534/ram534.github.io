@@ -1,0 +1,115 @@
+Const type qualifier in C
+
+Const is a type qualifier that can be applied to the declaration of any object (any lvalue) to signal the compiler that the value will not be changed. As a result, the compiler may place the object in read-only memory area. If the address of the variable
+is not taken in the program, the compiler might optimise it away, the object will not be allocated any memory and not appear in the object code. Because of these, attempting to change the value of a const object results in undefined behaviour. As a result, const objects need to be
+initialised at declaration. A const object can only be initialised at declaration, it cannot be modified at a later time (because any further modifications would be assignments, which are forbidden).
+
+A pointer to a variable:
+
+int i;
+int *p = &i; /* p points to the address of i */
+
+A pointer to a constant intekegr can be declared in two different ways:
+
+const int i;
+const int *p = &i;
+int const *q = &i;
+
+p and q are pointer to an integer constant, as a result they can be later changed to point to any other int variable, const qualified or not (if it is not const-qualified, the compiler will automatically up-qualify an int to a const int. An assignment is only valid when the types and qualifiers of the lvalues and rvalues match.). 
+The value of the integer p and q point to cannot be changed (using p or q).
+
+int j;
+p = &j; /* the type of &j is int*, which is up-qualified by the compiler to const int* */
+
+In this case, attempting to change the value of the integer p points to using p would result in error: 
+
+*p = 1; /* error: assignment of read-only location '*p' */
+
+In spite of this, we can still change the value of the integer p points to:
+
+int const *p;
+    
+int j = 27;
+    
+p = &j;
+    
+printf ("%d", *p); /* 27 */
+j = 3;
+    
+printf ("%d", *p);
+ /* 3 */   
+*p = 1; /* error: assignment of read-only location '*p' */
+
+
+We saw that up-qualification can be tacitly taken care of by the compiler. Down-qualification means dropping some information:
+
+int const j=10;
+int *p = &j;
+
+The type of &j is const int * and through assignment, the expression is implicitly cast to the type of p (int*). The constness of j is lost and j can be modified via p. This code will not work in C++ and may or may not throw warnings in C:
+
+const int j = 10;
+
+int *p = &j;
+ 
+printf("%d", *p); /* 10 */
+
+*p = 5;
+ 
+printf("%d", *p);
+ /* 5 */
+printf("%d", j);
+  /* 5 */
+
+
+Constant pointer to a variable
+
+int i=10;
+int j =11;
+int *const p = &i;
+p = &j; /* invalid, cannot change what p points to after initialisation */
+*p = j; /* valid, can change the value of the variable p points to */
+
+
+Constant pointer to a constant
+
+int j;
+int i = 0;
+const int *const p = &i;
+p = &j; /* invalid, cannot change what p points to after initialisation */
+*p = j;  /* invalid, p points to a constant int, so we cannot change its value using p */ 
+i = 1;
+printf("%d", i); /* 1 */
+printf("%d", *p); /* 1 */
+
+
+Const and data structures [1]
+
+The const qualifier can be applied to lvalues only (an lvalue is an object whose address can be taken, that persists beyond evaluation an expression). If a struct
+or union has a const member, the struct cannot be assigned to another struct.
+
+
+struct s {int i; const int j;};
+
+struct s st = {.j= 0};
+
+struct s tr = {.j = 1};
+
+st=tr;
+  /* error: assignment of read-only variable 'st' */
+
+
+A member of a const-qualified structure has the qualification of the type it belongs to:
+
+s.i int
+s.j const int
+
+const str s:
+s.i const int
+s.j const int
+
+Any attempt to modify an object whose type is const-qualified results in undefined behavior.
+
+
+[1] http://en.cppreference.com/w/c/language/const
+
